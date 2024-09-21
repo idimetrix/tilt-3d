@@ -1,28 +1,5 @@
-interface Settings {
-  reverse: boolean;
-  max: number;
-  startX: number;
-  startY: number;
-  perspective: number;
-  easing: string;
-  scale: number;
-  speed: number;
-  transition: boolean;
-  axis: "x" | "y" | null;
-  glare: boolean;
-  "max-glare": number;
-  "glare-prerender": boolean;
-  "full-page-listening": boolean;
-  "mouse-event-element": string | HTMLElement | null;
-  reset: boolean;
-  "reset-to-start": boolean;
-  gyroscope: boolean;
-  gyroscopeMinAngleX: number;
-  gyroscopeMaxAngleX: number;
-  gyroscopeMinAngleY: number;
-  gyroscopeMaxAngleY: number;
-  gyroscopeSamples: number;
-}
+import { Settings } from "./types";
+import { DEFAULT_SETTINGS } from "./constants";
 
 export class Tilt3d {
   private settings: Settings;
@@ -408,21 +385,21 @@ export class Tilt3d {
 
   prepareGlare(): void {
     if (!this.glarePrerender) {
-      const jsTiltGlare = document.createElement("div");
-      jsTiltGlare.classList.add("js-tilt-glare");
+      const tiltGlare = document.createElement("div");
+      tiltGlare.classList.add("tilt-glare");
 
-      const jsTiltGlareInner = document.createElement("div");
-      jsTiltGlareInner.classList.add("js-tilt-glare-inner");
+      const tiltGlareInner = document.createElement("div");
+      tiltGlareInner.classList.add("tilt-glare-inner");
 
-      jsTiltGlare.appendChild(jsTiltGlareInner);
-      this.element.appendChild(jsTiltGlare);
+      tiltGlare.appendChild(tiltGlareInner);
+      this.element.appendChild(tiltGlare);
     }
 
     this.glareElementWrapper = this.element.querySelector(
-      ".js-tilt-glare",
+      ".tilt-glare",
     ) as HTMLElement;
     this.glareElement = this.element.querySelector(
-      ".js-tilt-glare-inner",
+      ".tilt-glare-inner",
     ) as HTMLElement;
 
     if (this.glarePrerender) {
@@ -501,34 +478,8 @@ export class Tilt3d {
   }
 
   extendSettings(settings: Partial<Settings>): Settings {
-    const defaultSettings: Settings = {
-      reverse: false,
-      max: 15,
-      startX: 0,
-      startY: 0,
-      perspective: 1000,
-      easing: "cubic-bezier(.03,.98,.52,.99)",
-      scale: 1,
-      speed: 300,
-      transition: true,
-      axis: null,
-      glare: false,
-      "max-glare": 1,
-      "glare-prerender": false,
-      "full-page-listening": false,
-      "mouse-event-element": null,
-      reset: true,
-      "reset-to-start": true,
-      gyroscope: true,
-      gyroscopeMinAngleX: -45,
-      gyroscopeMaxAngleX: 45,
-      gyroscopeMinAngleY: -45,
-      gyroscopeMaxAngleY: 45,
-      gyroscopeSamples: 10,
-    };
-
     const newSettings: any = {};
-    for (const property in defaultSettings) {
+    for (const property in DEFAULT_SETTINGS) {
       if (property in settings) {
         newSettings[property] = settings[property as keyof Settings];
       } else if (this.element.hasAttribute(`data-tilt-${property}`)) {
@@ -539,7 +490,7 @@ export class Tilt3d {
           newSettings[property] = attribute;
         }
       } else {
-        newSettings[property] = defaultSettings[property as keyof Settings];
+        newSettings[property] = DEFAULT_SETTINGS[property as keyof Settings];
       }
     }
 
@@ -547,34 +498,44 @@ export class Tilt3d {
   }
 
   static init(
-    elements: Node | Node[] | NodeList,
-    settings?: Record<string, any>,
+    nodes: Node | Node[] | NodeListOf<HTMLElement>,
+    settings?: Partial<Settings>,
   ): void {
-    if (elements instanceof Node) {
-      elements = [elements];
+    let elements: HTMLElement[] = [];
+
+    // Convert elements to array of HTMLElements
+    if (nodes instanceof Node) {
+      elements = [nodes as HTMLElement];
+    } else if (nodes instanceof NodeList) {
+      elements = Array.from(nodes);
+    } else if (Array.isArray(nodes)) {
+      elements = nodes.filter(
+        (el): el is HTMLElement => el instanceof HTMLElement,
+      );
     }
 
-    if (elements instanceof NodeList) {
-      elements = Array.prototype.slice.call(elements);
-    }
-
-    if (!(elements instanceof Array)) {
+    // If elementArray is empty or invalid, return early
+    if (elements.length === 0) {
       return;
     }
 
+    // Initialize Tilt3d for each element
     elements.forEach((element) => {
-      if (!("tilt3d" in element)) {
-        (element as any).tilt3d = new Tilt3d(
-          element as unknown as HTMLElement,
-          settings,
-        );
+      if (!(element as any).tilt3d) {
+        (element as any).tilt3d = new Tilt3d(element, settings);
       }
     });
   }
 }
 
+declare global {
+  interface Window {
+    Tilt3d: typeof Tilt3d;
+  }
+}
+
 if (typeof window !== "undefined" && typeof document !== "undefined") {
-  (window as any).Tilt3d = Tilt3d;
+  window.Tilt3d = Tilt3d;
 
   Tilt3d.init(document.querySelectorAll("[data-tilt]"));
 }

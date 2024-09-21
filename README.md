@@ -23,6 +23,39 @@ const elements = document.querySelectorAll(".tilt-3d");
 Tilt3d.init(elements)
 ```
 
+## Nuxt 3 (in file plugins/tilt-3d.ts)
+
+```typescript
+import { Tilt3d, type Settings } from 'tilt-3d'
+import type { DirectiveBinding } from 'vue'
+
+export default defineNuxtPlugin((nuxtApp) => {
+    const map: Map<HTMLElement, Tilt3d> = new Map()
+
+    nuxtApp.vueApp.directive<HTMLElement, Partial<Settings>>('tilt-3d', {
+        mounted(el: HTMLElement, binding: DirectiveBinding<Partial<Settings>>) {
+            if (map.has(el)) return
+
+            const tilt3d = new Tilt3d(el, binding.value || {})
+
+            map.set(el, tilt3d)
+        },
+        unmounted(el: HTMLElement) {
+            const tilt3d = map.get(el)
+
+            tilt3d?.destroy()
+
+            map.delete(el)
+        },
+        getSSRProps() {
+            return {}
+        },
+    })
+})
+
+// Use just as a directive: <div v-tilt-3d>Content</div> or  <div v-tilt-3d={settings}>Content</div>
+```
+
 ## Options
 ```js
 {

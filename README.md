@@ -1,6 +1,8 @@
 # tilt-3d
 A smooth 3D tilt JavaScript + TypeScript library
 
+### [Demo](https://tilt-3d.netlify.app)
+
 ## Installation
 
 To install the package, use npm:

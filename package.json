@@ -17,7 +17,7 @@
   ],
   "email": "dmitrii.selikhov@gmail.com",
   "scripts": {
-    "build": "tsup ./src",
+    "build": "tsup ./src && cp index.html ./dist/index.html",
     "watch": "tsup ./src --watch",
     "run": "node dist/index.js",
     "dev": "pnpm run watch & nodemon dist/index.js",

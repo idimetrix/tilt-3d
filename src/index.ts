@@ -539,3 +539,6 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
 
   Tilt3d.init(document.querySelectorAll("[data-tilt]"));
 }
+
+export * from "./types";
+export * from "./constants";

@@ -21,7 +21,7 @@
     "watch": "tsup ./src --watch",
     "run": "node dist/index.js",
     "dev": "pnpm run watch & nodemon dist/index.js",
-    "prettier": "prettier --write src/**",
+    "prettier": "prettier --write src/** index.html",
     "format": "pnpm run prettier && pnpm type",
     "bootstrap": "pnpm install && pnpm format",
     "type": "tsc --noEmit --incremental",
